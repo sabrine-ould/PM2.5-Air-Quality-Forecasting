@@ -1,6 +1,4 @@
 
-#%% 5.3.1 Missing Values
-
 import pandas as pd
 import numpy as np
 
@@ -258,9 +256,6 @@ for variable in sentinel_variables:
     print(station_missing[station_missing["Missing_Count"] > 0])
     
     
-#%% 5.3.2 - Define Features and Target
-
-#%% 5.3.2 - Scaling and Feature Selection
 
 #%% Step 1 - Define Features and Target
 
@@ -456,6 +451,33 @@ mlp_pipeline = Pipeline(steps=[
 
 
 # 5. Train and evaluate each fold separately
+
+# Create Temporal Cross-Validation splits
+
+from sklearn.model_selection import TimeSeriesSplit
+
+# Get dates corresponding to training rows
+train_dates = pd.to_datetime(df.loc[X_train.index, "date"])
+
+# Sort unique dates
+unique_train_dates = np.sort(train_dates.unique())
+
+# Create 5 temporal folds with a 1-day gap
+tscv = TimeSeriesSplit(n_splits=5, gap=1)
+
+cv_splits = []
+
+for train_date_idx, val_date_idx in tscv.split(unique_train_dates):
+
+    train_fold_dates = unique_train_dates[train_date_idx]
+    val_fold_dates = unique_train_dates[val_date_idx]
+
+    train_idx = np.where(train_dates.isin(train_fold_dates))[0]
+    val_idx = np.where(train_dates.isin(val_fold_dates))[0]
+
+    cv_splits.append((train_idx, val_idx))
+
+print("Number of CV folds:", len(cv_splits))
 
 fold_results = []
 selected_features_by_fold = []
@@ -685,4 +707,6 @@ print(comparison.to_string(index=False))
 
 
 #%% 5.3.4 - Step 1: Validate timestamps and station identity
+
+
 
