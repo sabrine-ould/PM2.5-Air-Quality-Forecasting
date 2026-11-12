@@ -1,0 +1,15 @@
+# Dataset files
+Data/*.csv
+
+# Python temporary files
+__pycache__/
+*.pyc
+.spyproject/
+
+# Virtual environments
+.venv/
+venv/
+
+# System files
+.DS_Store
+Thumbs.db
