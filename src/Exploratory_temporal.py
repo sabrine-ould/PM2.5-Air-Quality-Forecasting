@@ -6,7 +6,7 @@ import pandas as pd
 # ---------- 1. Load and validate timestamps ----------
 
 
-df = pd.read_csv("../Data/cleaned_pm25.csv")
+df = pd.read_csv("Data/cleaned_pm25.csv")
 
 df["date"] = pd.to_datetime(df["date"], errors="coerce")
 
@@ -888,7 +888,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 #% 1. Load dataset
-df = pd.read_csv("../Data/cleaned_pm25.csv")
+df = pd.read_csv("Data/cleaned_pm25.csv")
 
 
 #% 2. Prepare dates
@@ -1083,7 +1083,7 @@ PM25_THRESHOLD = 15
 #%% 3. Load and prepare the dataset
 
 #df = pd.read_csv("combined_gee_pm25.csv")
-df = pd.read_csv("../Data/cleaned_pm25.csv")
+df = pd.read_csv("Data/cleaned_pm25.csv")
 
 # Convert date to datetime
 df[DATE] = pd.to_datetime(df[DATE], errors="coerce")
@@ -1943,8 +1943,5 @@ print(
         ["station_id", "variable", "regime_breaks", "notes"]
     ].head(20)
 )
+print ("done")
 
-import os
-
-print(os.getcwd())
-print(os.listdir())
