@@ -1,8 +1,5 @@
 # PM2.5-Air-Quality-Forecasting
 PM2.5 Air Quality Forecasting Project
-# PM2.5 Forecasting
-
-**Master 1 – Data Science | University of Algiers 1**
 
 ## Project Overview
 
