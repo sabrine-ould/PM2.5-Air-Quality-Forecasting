@@ -365,7 +365,7 @@ environmental_variables = [
 ]
 
 # Select environmental variables
-X = df_clean[environmental_variables].copy()
+X = df[environmental_variables].copy()
 
 # Handle missing values
 imputer = SimpleImputer(strategy="median")
@@ -1529,5 +1529,6 @@ original_columns = df.columns.tolist()
 df_clean[original_columns].to_csv("cleaned_pm25.csv", index=False)
 
 print("Cleaned dataset saved successfully!")
+
 print(pd.read_csv("../Data/cleaned_pm25.csv").shape)
 print(df.shape)
