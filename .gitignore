@@ -1,5 +1,4 @@
 # Dataset files
-Data/*.csv
 
 # Python temporary files
 __pycache__/
