@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 #%% step1 Load the working dataset
-df = pd.read_csv("Data/combined_gee_pm25.csv")
+df = pd.read_csv("../Data/combined_gee_pm25.csv")
 #%1. 3. Dataset dimensions
 print("Number of rows:", df.shape[0])
 print("Number of columns:", df.shape[1])
@@ -1529,5 +1529,5 @@ original_columns = df.columns.tolist()
 df_clean[original_columns].to_csv("cleaned_pm25.csv", index=False)
 
 print("Cleaned dataset saved successfully!")
-print(pd.read_csv("Data/cleaned_pm25.csv").shape)
+print(pd.read_csv("../Data/cleaned_pm25.csv").shape)
 print(df.shape)
