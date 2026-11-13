@@ -230,8 +230,4 @@ This project is conducted as part of the Master 1 Data Science curriculum.
   <sub>Data Science · Machine Learning · Environmental Analysis</sub>
 </p>
 
----
 
-<p align="center">
-  **PM2.5 Forecasting | Data Science Project**
-</p>
