@@ -6,7 +6,7 @@ import pandas as pd
 # ---------- 1. Load and validate timestamps ----------
 
 
-df = pd.read_csv("Data/cleaned_pm25.csv")
+df = pd.read_csv("../Data/cleaned_pm25.csv")
 
 df["date"] = pd.to_datetime(df["date"], errors="coerce")
 
@@ -888,7 +888,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 #% 1. Load dataset
-df = pd.read_csv("Data/cleaned_pm25.csv")
+df = pd.read_csv("../Data/cleaned_pm25.csv")
 
 
 #% 2. Prepare dates
@@ -1064,26 +1064,19 @@ DATE = "date"
 ID = "id"
 
 variables = [
-    "pm25",
-    "temperature_celsius",
-    "pressure_mb",
-    "wind_u",
-    "wind_v",
-    "NO2",
-    "CO",
-    "O3",
-    "AOD"
+    "pm25"
+    
 ]
 
 # PM2.5 threshold used for exceedance statistics.
 # Change this value if your project specifies another threshold.
-PM25_THRESHOLD = 15
-
+THRESHOLD_25 = 25
+THRESHOLD_50 = 50
 
 #%% 3. Load and prepare the dataset
 
 #df = pd.read_csv("combined_gee_pm25.csv")
-df = pd.read_csv("Data/cleaned_pm25.csv")
+df = pd.read_csv("../Data/cleaned_pm25.csv")
 
 # Convert date to datetime
 df[DATE] = pd.to_datetime(df[DATE], errors="coerce")
@@ -1109,20 +1102,24 @@ df = df.sort_values(
     by=[ID, DATE]
 ).reset_index(drop=True)
 
+n_before = len(df)
+df = df[~((df["pm25"] <= 0) | (df["pm25"] >= 500))].copy()
+print(f"Removed {n_before - len(df)} invalid PM2.5 rows")
+
 print("Dataset dimensions:", df.shape)
 print("Number of stations:", df[ID].nunique())
 
 
 #%% 4. Create station identifiers
 
-station_ids = sorted(df[ID].unique())
+node_id = sorted(df[ID].unique())
 
 station_mapping = {
     original_id: f"ST_{i+1:02d}"
-    for i, original_id in enumerate(station_ids)
+    for i, original_id in enumerate(node_id)
 }
 
-df["station_id"] = df[ID].map(station_mapping)
+df["node_id"] = df[ID].map(station_mapping)
 
 print("Station mapping created successfully.")
 
@@ -1163,217 +1160,139 @@ def get_longest_continuous_segment(data, variable):
 
 # 5.2 Calculate temporal statistics
 
+
 def calculate_temporal_statistics(data, variable):
 
-    valid_data = data[
-        [DATE, variable]
-    ].dropna().copy()
-
+    valid_data = data[[DATE, variable]].dropna().copy()
     valid_data = valid_data.sort_values(DATE)
 
-    results = {}
+    # Initialize all expected keys
+    results = {
+        "n_records": len(valid_data),
+        "t_min": np.nan,
+        "t_max": np.nan,
+        "sampling_interval_median_sec": np.nan,
+        "sampling_interval_std_sec": np.nan,
+        "pct_missing_intervals": np.nan,
+        "acf_lag1": np.nan,
+        "acf_lag7": np.nan,
+        "acf_lag24": np.nan,
+        "pacf_lag1": np.nan,
+        "ljung_box_p": np.nan,
+        "adf_p": np.nan,
+        "kpss_p": np.nan
+    }
 
-    n = len(valid_data)
-
-    results["n_records"] = n
-
-    if n == 0:
-
-        results["t_min"] = np.nan
-        results["t_max"] = np.nan
-        results["median_sampling_interval_sec"] = np.nan
-        results["pct_missing_intervals"] = np.nan
-
-        results["acf_lag1"] = np.nan
-        results["acf_lag7"] = np.nan
-        results["pacf_lag1"] = np.nan
-        results["ljung_box_pvalue"] = np.nan
-
-        results["adf_pvalue"] = np.nan
-        results["kpss_pvalue"] = np.nan
-
+    if valid_data.empty:
         return results
 
     dates = valid_data[DATE]
-    values = valid_data[variable].to_numpy(dtype=float)
-
     results["t_min"] = dates.min()
     results["t_max"] = dates.max()
 
     # Sampling intervals
-
     intervals = dates.diff().dropna().dt.total_seconds()
 
     if len(intervals) > 0:
-
-        results["median_sampling_interval_sec"] = (
-            intervals.median()
-        )
-
-    else:
-
-        results["median_sampling_interval_sec"] = np.nan
+        results["sampling_interval_median_sec"] = intervals.median()
+        results["sampling_interval_std_sec"] = intervals.std()
 
     # Missing daily intervals
-
-    expected_days = (
-        dates.max() - dates.min()
-    ).days + 1
-
+    expected_days = (dates.max() - dates.min()).days + 1
     observed_days = dates.dt.normalize().nunique()
 
-    missing_days = max(
-        expected_days - observed_days,
-        0
-    )
+    if expected_days > 0:
+        results["pct_missing_intervals"] = (
+            (expected_days - observed_days) / expected_days * 100
+        )
 
-    results["pct_missing_intervals"] = (
-        missing_days / expected_days * 100
-        if expected_days > 0 else np.nan
-    )
-
-    # Use longest continuous segment for time-series tests
-
+    # Longest continuous daily segment
     segment = get_longest_continuous_segment(
-        valid_data,
-        variable
+        valid_data, variable
     )
 
     series = segment[variable].to_numpy(dtype=float)
 
     if len(series) < 2 or np.std(series) == 0:
-
-        results["acf_lag1"] = np.nan
-        results["acf_lag7"] = np.nan
-        results["pacf_lag1"] = np.nan
-        results["ljung_box_pvalue"] = np.nan
-
-        results["adf_pvalue"] = np.nan
-        results["kpss_pvalue"] = np.nan
-
         return results
 
     # ACF
-
     try:
-
         acf_values = acf(
             series,
-            nlags=min(7, len(series) - 1),
+            nlags=min(24, len(series) - 1),
             fft=False
         )
 
-        results["acf_lag1"] = (
-            acf_values[1]
-            if len(acf_values) > 1
-            else np.nan
-        )
-
-        results["acf_lag7"] = (
-            acf_values[7]
-            if len(acf_values) > 7
-            else np.nan
-        )
+        for lag in [1, 7, 24]:
+            if lag < len(acf_values):
+                results[f"acf_lag{lag}"] = acf_values[lag]
 
     except Exception:
-
-        results["acf_lag1"] = np.nan
-        results["acf_lag7"] = np.nan
+        pass
 
     # PACF
-
     try:
-
-        pacf_values = pacf(
-            series,
-            nlags=1,
-            method="ywm"
-        )
-
-        results["pacf_lag1"] = pacf_values[1]
+        if len(series) >= 3:
+            pacf_values = pacf(
+                series,
+                nlags=1,
+                method="ywm"
+            )
+            results["pacf_lag1"] = pacf_values[1]
 
     except Exception:
-
-        results["pacf_lag1"] = np.nan
+        pass
 
     # Ljung-Box test
-
     try:
-
         if len(series) > 10:
-
             lb_result = acorr_ljungbox(
                 series,
                 lags=[10],
                 return_df=True
             )
-
-            results["ljung_box_pvalue"] = (
-                lb_result["lb_pvalue"].iloc[0]
-            )
-
-        else:
-
-            results["ljung_box_pvalue"] = np.nan
+            results["ljung_box_p"] = lb_result["lb_pvalue"].iloc[0]
 
     except Exception:
-
-        results["ljung_box_pvalue"] = np.nan
+        pass
 
     # ADF test
-
     try:
-
-        results["adf_pvalue"] = adfuller(
+        results["adf_p"] = adfuller(
             series,
             autolag="AIC"
         )[1]
 
     except Exception:
-
-        results["adf_pvalue"] = np.nan
+        pass
 
     # KPSS test
-
     try:
-
-        results["kpss_pvalue"] = kpss(
+        results["kpss_p"] = kpss(
             series,
             regression="c",
             nlags="auto"
         )[1]
 
     except Exception:
-
-        results["kpss_pvalue"] = np.nan
+        pass
 
     return results
 
 
 # 5.3 Calculate temporal trend
 
-def calculate_trend(dates, values):
-
-    if len(values) < 2:
+def calculate_trend(data, variable):
+    segment = get_longest_continuous_segment(data, variable)
+    if len(segment) < 2:
         return np.nan, np.nan
-
-    x = (
-        (dates - dates.min())
-        .dt.total_seconds()
-        / 86400
-    )
-
+    x = (segment[DATE] - segment[DATE].min()).dt.total_seconds().to_numpy() / 86400
+    y = segment[variable].to_numpy(dtype=float)
     try:
-
-        result = linregress(
-            x,
-            values
-        )
-
-        return result.slope, result.pvalue
-
+        r = linregress(x, y)
+        return r.slope, r.pvalue
     except Exception:
-
         return np.nan, np.nan
 
 
@@ -1409,43 +1328,20 @@ def calculate_seasonal_amplitude(data, variable):
 
 
 # 5.5 Calculate drift using Mann-Whitney U
+from scipy.stats import linregress, ks_2samp
 
 def calculate_drift(data, variable):
-
-    segment = get_longest_continuous_segment(
-        data,
-        variable
-    )
-
+    segment = get_longest_continuous_segment(data, variable)
     values = segment[variable].dropna().to_numpy()
-
     n = len(values)
-
     if n < 10:
         return np.nan, np.nan
-
-    group_size = max(
-        int(n * 0.20),
-        1
-    )
-
-    first_period = values[:group_size]
-    last_period = values[-group_size:]
-
+    half = max(n // 2, 1)
     try:
-
-        result = mannwhitneyu(
-            first_period,
-            last_period,
-            alternative="two-sided"
-        )
-
-        return result.statistic, result.pvalue
-
+        test = ks_2samp(values[:half], values[half:])
+        return test.statistic, test.pvalue
     except Exception:
-
         return np.nan, np.nan
-
 
 # 5.6 Calculate monthly missingness as JSON
 
@@ -1527,6 +1423,7 @@ def calculate_monthly_missingness(station_data, variable):
 
 # 5.7 Detect regime shifts and return their dates using PELT
 
+
 def calculate_regime_break_dates(data, variable):
 
     valid_data = data[
@@ -1536,7 +1433,6 @@ def calculate_regime_break_dates(data, variable):
     valid_data = valid_data.sort_values(DATE)
 
     # Apply PM2.5 validity range
-
     if variable == "pm25":
 
         valid_data = valid_data[
@@ -1548,7 +1444,6 @@ def calculate_regime_break_dates(data, variable):
         return []
 
     # Separate continuous daily segments
-
     groups = (
         valid_data[DATE].diff()
         .ne(pd.Timedelta(days=1))
@@ -1562,7 +1457,6 @@ def calculate_regime_break_dates(data, variable):
         values = segment[variable].to_numpy(dtype=float)
 
         # Require at least 10 observations
-
         if len(values) < 10:
             continue
 
@@ -1572,7 +1466,6 @@ def calculate_regime_break_dates(data, variable):
             continue
 
         # Standardize values
-
         values = (
             values - np.mean(values)
         ) / std
@@ -1590,7 +1483,6 @@ def calculate_regime_break_dates(data, variable):
             )
 
             # Last breakpoint represents the end of the series
-
             for bp in breakpoints[:-1]:
 
                 change_date = segment.iloc[bp][DATE]
@@ -1600,7 +1492,6 @@ def calculate_regime_break_dates(data, variable):
                 )
 
         except Exception:
-
             continue
 
     return change_dates
@@ -1659,10 +1550,10 @@ def generate_notes(record, regime_dates):
 
 temporal_data = []
 
-for station in sorted(df["station_id"].unique()):
+for station in sorted(df["node_id"].unique()):
 
     station_df = df[
-        df["station_id"] == station
+        df["node_id"] == station
     ].copy()
 
     station_df = station_df.sort_values(DATE)
@@ -1676,14 +1567,8 @@ for station in sorted(df["station_id"].unique()):
 
     # Number of complete calendar years elapsed
 
-    n_cycles_observed = (
-        station_end.year - station_start.year
-        - (
-            (station_end.month, station_end.day)
-            <
-            (station_start.month, station_start.day)
-        )
-    )
+    n_months = station_df[DATE].dt.to_period("M").nunique()
+    n_cycles_observed = n_months // 12
 
     # Monthly missingness for atmospheric variables
 
@@ -1727,10 +1612,8 @@ for station in sorted(df["station_id"].unique()):
 
         # Trend
 
-        trend_slope, trend_pval = calculate_trend(
-            variable_data[DATE],
-            variable_data[variable].to_numpy()
-        )
+        trend_slope, trend_pval = calculate_trend(station_df, variable)
+
 
         # Seasonal amplitude
 
@@ -1745,10 +1628,15 @@ for station in sorted(df["station_id"].unique()):
 
         # Drift
 
-        drift_statistic, drift_pvalue = calculate_drift(
-            station_df,
-            variable
-        )
+        if variable == "pm25":
+        
+            target_drift_stat, target_drift_pval = calculate_drift(
+            station_df, "pm25"
+            )
+        else:
+        
+            target_drift_stat = np.nan
+            target_drift_pval = np.nan
 
         # Regime shifts
 
@@ -1762,26 +1650,23 @@ for station in sorted(df["station_id"].unique()):
         # PM2.5 exceedance statistics only
 
         if variable == "pm25":
-
             valid_pm25 = variable_data[
-                (variable_data[variable] > 0) &
-                (variable_data[variable] < 500)
-            ][variable]
-
-            exceedance_count = int(
-                (valid_pm25 > PM25_THRESHOLD).sum()
+            (variable_data[variable] > 0) &
+            (variable_data[variable] < 500)
+            ][variable] 
+            n_above_25 = int((valid_pm25 > THRESHOLD_25).sum())
+            n_above_50 = int((valid_pm25 > THRESHOLD_50).sum())
+            pct_above_25 = (
+            n_above_25 / len(valid_pm25) * 100
+        if len(valid_pm25) > 0 else np.nan
             )
-
-            exceedance_pct = (
-                exceedance_count / len(valid_pm25) * 100
-                if len(valid_pm25) > 0
-                else np.nan
+            pct_above_50 = (
+                n_above_50 / len(valid_pm25) * 100
+        if len(valid_pm25) > 0 else np.nan
             )
-
         else:
-
-            exceedance_count = np.nan
-            exceedance_pct = np.nan
+            n_above_25 = n_above_50 = np.nan
+            pct_above_25 = pct_above_50 = np.nan
 
         # Recommended CV strategy
 
@@ -1795,7 +1680,7 @@ for station in sorted(df["station_id"].unique()):
 
             "model_group": MODEL_GROUP,
 
-            "station_id": station,
+            "node_id": station,
 
             "variable": variable,
 
@@ -1805,8 +1690,12 @@ for station in sorted(df["station_id"].unique()):
 
             "t_max": stats["t_max"],
 
-            "median_sampling_interval_sec":
-                stats["median_sampling_interval_sec"],
+            "sampling_interval_median_sec":
+                stats["sampling_interval_median_sec"],
+                
+            "sampling_interval_std_sec": 
+                stats["sampling_interval_std_sec"],
+
 
             "pct_missing_intervals":
                 stats["pct_missing_intervals"],
@@ -1816,20 +1705,24 @@ for station in sorted(df["station_id"].unique()):
 
             "acf_lag7":
                 stats["acf_lag7"],
+                
+            "acf_lag24": 
+                stats["acf_lag24"],
+
 
             "pacf_lag1":
                 stats["pacf_lag1"],
 
-            "ljung_box_pvalue":
-                stats["ljung_box_pvalue"],
+            "ljung_box_p":
+                stats["ljung_box_p"],
 
-            "adf_pvalue":
-                stats["adf_pvalue"],
+            "adf_p":
+                stats["adf_p"],
 
-            "kpss_pvalue":
-                stats["kpss_pvalue"],
+            "kpss_p":
+                stats["kpss_p"],
 
-            "trend_slope":
+            "trend_slope_per_day":
                 trend_slope,
 
             "trend_pval":
@@ -1840,22 +1733,32 @@ for station in sorted(df["station_id"].unique()):
 
             "diurnal_amplitude":
                 diurnal_amplitude,
-
-            "drift_statistic":
-                drift_statistic,
-
-            "drift_pvalue":
-                drift_pvalue,
+                
+             "target_drift_stat": 
+                 target_drift_stat,
+                 
+             "target_drift_pval": 
+                 target_drift_pval,
+                 
+             "n_days_above_25": 
+                 n_above_25,
+                 
+             "n_days_above_50": 
+                 n_above_50,
+                 
+             "pct_days_above_25": 
+                 pct_above_25,
+                 
+             "pct_days_above_50": 
+                 pct_above_50,
 
             "regime_breaks":
                 regime_breaks,
 
-            "regime_break_dates":
-                json.dumps(regime_dates),
 
             "n_cycles_observed":
                 n_cycles_observed,
-
+                 
             "no2_pct_missing_by_month":
                 no2_monthly_missingness,
 
@@ -1864,12 +1767,6 @@ for station in sorted(df["station_id"].unique()):
 
             "o3_pct_missing_by_month":
                 o3_monthly_missingness,
-
-            "exceedance_count":
-                exceedance_count,
-
-            "exceedance_pct":
-                exceedance_pct,
 
             "cv_strategy_recommended":
                 cv_strategy,
@@ -1898,12 +1795,13 @@ print(temporal_df.shape)
 
 print("\nFirst rows:")
 print(temporal_df.head())
-
+print("Number of columns:", len(temporal_df.columns))
+print("Columns:", temporal_df.columns.tolist())
 
 #%% 8. Sort the results
 
 temporal_df = temporal_df.sort_values(
-    by=["station_id", "variable"]
+    by=["node_id", "variable"]
 ).reset_index(drop=True)
 
 
@@ -1934,13 +1832,13 @@ print("\nFinal temporal features:")
 print(temporal_df.head(20))
 
 print("\nNumber of rows:", len(temporal_df))
-print("Number of stations:", temporal_df["station_id"].nunique())
+print("Number of stations:", temporal_df["node_id"].nunique())
 print("Number of variables:", temporal_df["variable"].nunique())
 
 print("\nNotes examples:")
 print(
     temporal_df[
-        ["station_id", "variable", "regime_breaks", "notes"]
+        ["node_id", "variable", "regime_breaks", "notes"]
     ].head(20)
 )
 print ("done")
