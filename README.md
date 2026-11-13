@@ -94,8 +94,6 @@ The model uses available atmospheric, meteorological, and justified temporal fea
   <strong>MLP — Multi-Layer Perceptron</strong>
 </p>
 
-The assigned forecasting model for **Group G8** is the Multi-Layer Perceptron (MLP).
-
 An MLP is a feedforward artificial neural network composed of interconnected layers of neurons. It can learn nonlinear relationships between input variables and a continuous target.
 
 For this project, the MLP is used as a regression model to estimate daily surface PM2.5 concentrations.
