@@ -3,7 +3,7 @@
 <p align="center">
   **A Data Science Project for Daily Air Quality Analysis and Forecasting**
 </p>
-
+---
 
 ## 📌 Project Overview
 
