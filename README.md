@@ -6,13 +6,6 @@ PM2.5 Air Quality Forecasting Project
   **A Data Science Project for Daily Air Quality Analysis and Forecasting**
 </p>
 
-<p align="center">
-  ![Python](https://img.shields.io/badge/Python-3.x-blue?logo=python)
-  ![Data Science](https://img.shields.io/badge/Field-Data%20Science-orange)
-  ![Model](https://img.shields.io/badge/Model-XGBoost-green)
-  ![Status](https://img.shields.io/badge/Status-In%20Progress-yellow)
-</p>
-
 ---
 
 ## 📌 Project Overview
