@@ -1,6 +1,4 @@
-# PM2.5-Air-Quality-Forecasting
-
-# 🌍 PM2.5 Forecasting — Mediterranean Basin
+# 🌍 PM2.5-Air-Quality-Forecasting — Mediterranean Basin
 
 <p align="center">
   **A Data Science Project for Daily Air Quality Analysis and Forecasting**
