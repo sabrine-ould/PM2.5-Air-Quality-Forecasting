@@ -1,125 +1,217 @@
 # PM2.5-Air-Quality-Forecasting
 PM2.5 Air Quality Forecasting Project
+# 🌍 PM2.5 Forecasting — Mediterranean Basin
 
-## Project Overview
+<p align="center">
+  **A Data Science Project for Daily Air Quality Analysis and Forecasting**
+</p>
 
-Air pollution is an important environmental challenge, and fine particulate matter (PM2.5) is one of the key indicators used to assess air quality.
+<p align="center">
+  ![Python](https://img.shields.io/badge/Python-3.x-blue?logo=python)
+  ![Data Science](https://img.shields.io/badge/Field-Data%20Science-orange)
+  ![Model](https://img.shields.io/badge/Model-XGBoost-green)
+  ![Status](https://img.shields.io/badge/Status-In%20Progress-yellow)
+</p>
 
-This project focuses on forecasting daily surface PM2.5 concentrations using historical air-quality observations, satellite-derived information, and meteorological variables.
+---
 
-The project aims to investigate and compare different forecasting approaches, with particular attention to their predictive performance, temporal generalization, and ability to generalize to unseen monitoring stations.
+## 📌 Project Overview
 
-## Objectives
+Air pollution is a major environmental challenge, particularly in densely populated and urban regions. Fine particulate matter (PM2.5) is an important air-quality indicator due to its potential impact on human health.
 
-The main objectives of this project are:
+This project focuses on the **analysis and forecasting of daily surface PM2.5 concentrations across the Mediterranean Basin**, using historical air-quality observations, satellite-derived information, and meteorological variables.
 
-- Explore and understand the available air-quality and environmental datasets.
-- Perform data quality assessment, cleaning, and preprocessing.
-- Investigate temporal patterns, missing observations, and potential data drift.
-- Develop appropriate temporal, spatial, and spatio-temporal validation strategies.
-- Implement and evaluate different PM2.5 forecasting models.
-- Compare model performance using consistent evaluation protocols.
-- Assess model robustness and the contribution of different feature groups.
+The project emphasizes reliable temporal analysis, leakage-free preprocessing, and rigorous model evaluation to assess forecasting performance and generalization.
 
-## Data Description
+## 🎯 Objectives
 
-The project uses three primary datasets:
+- Exxplore the spatial and temporal characteristics of PM2.5 concentrations.
 
-| Dataset | Description |
+Investigate missing values, duplicates, outliers, and data quality.
+
+Analyze temporal trends, seasonal patterns, and autocorrelation.
+
+Study relationships between PM2.5 and atmospheric or meteorological predictors.
+
+Apply preprocessing and feature engineering while preventing data leakage.
+
+Develop an MLP-based regression model for daily PM2.5 forecasting.
+
+Evaluate predictive performance using appropriate validation strategies.
+
+Investigate model robustness and feature-importance stability.
+
+Ensure that experiments are reproducible and scientifically documented.
+
+## 📊 Dataset
+
+**Dataset:** Air Quality – Mediterranean Basin (2016–2026)
+
+The dataset combines air-quality observations with meteorological and atmospheric variables.
+
+| Category | Variables |
 |---|---|
-| `pm25.csv` | PM2.5 observation data |
-| `gee_features_daily.csv` | Daily environmental features derived from Google Earth Engine |
-| `combined_gee_pm25.csv` | Combined PM2.5 observations and environmental features |
+| Target | PM2.5 |
+| Meteorological | Temperature, Pressure, Wind U, Wind V |
+| Atmospheric | NO2, CO, O3, AOD |
+| Identification | Date, Station, Latitude, Longitude |
 
-The combined dataset provides the basis for the subsequent data exploration and forecasting workflow.
+**Prediction target:** Daily surface PM2.5 concentration, measured in µg/m³.
 
-## Methodology
+## 🧪 Methodology
 
-The project follows a structured experimental workflow.
+The project follows a structured data science workflow:
 
-### 1. Data Exploration and Auditing
+1. **Exploratory Data Analysis**
+   - Dataset overview and descriptive statistics.
+   - Missing-value and outlier investigation.
+   - Distribution and correlation analysis.
+   - PM2.5 concentration patterns.
 
-- Dataset structure and variable inspection.
-- Descriptive statistical analysis.
-- Missing-value and duplicate analysis.
-- Outlier investigation.
-- Correlation and multicollinearity analysis.
-- Target distribution and station-level analysis.
+2. **Temporal Analysis**
+   - Timestamp regularity and missing dates.
+   - Autocorrelation and stationarity analysis.
+   - Monthly, yearly, and seasonal patterns.
+   - Temporal drift and lead–lag relationships.
 
-### 2. Data Preprocessing
+3. **Preprocessing and Feature Engineering**
+   - Data cleaning and quality checks.
+   - Missing-data treatment.
+   - Temporal feature construction.
+   - Leakage prevention and station-aware processing.
 
-- Data quality checks and cleaning.
-- Handling missing environmental observations.
-- Missingness indicators for selected variables.
-- Feature preparation.
-- Chronological data splitting.
-- Prevention of data leakage.
+4. **Model Development and Evaluation**
+   The project develops and evaluates a Multi-Layer Perceptron (MLP) neural network for daily PM2.5 forecasting.
 
-### 3. Temporal Analysis
+The model uses available atmospheric, meteorological, and justified temporal features to learn nonlinear relationships associated with PM2.5 concentrations.
 
-- Sampling regularity and missing-date analysis.
-- Autocorrelation and partial autocorrelation analysis.
-- Trend and seasonal pattern investigation.
-- Temporal drift analysis.
+## 🤖 Model
 
-### 4. Validation Strategies
+The assigned forecasting model for **Group G8** is:
 
-Four validation schemes are considered:
+**MLP — Multi-Layer Perceptron**
 
-- **Temporal Cross-Validation:** evaluates performance on future observations.
-- **Spatial Cross-Validation:** evaluates generalization to unseen stations.
-- **Random Cross-Validation:** used as a diagnostic comparison, not for final model selection.
-- **Spatio-Temporal Blocked Cross-Validation:** evaluates generalization across both time and location.
+An MLP is a feedforward artificial neural network composed of interconnected layers of neurons. It can learn nonlinear relationships between input variables and a continuous target.
 
-### 5. Forecasting and Model Evaluation
+For this project, the MLP is used as a regression model to estimate daily surface PM2.5 concentrations.
 
-Different forecasting approaches will be implemented and evaluated under consistent validation conditions.
+## 📈 Evaluation
 
-Model evaluation will include appropriate regression metrics, model comparisons, hyperparameter analysis, and robustness experiments.
+Model performance will be assessed using:
 
-## Project Organization
+- MAE — Mean Absolute Error
+- RMSE — Root Mean Squared Error
+- R² — Coefficient of Determination
+
+Validation and test results will be reported separately to avoid misleading performance estimates.
+
+## 📁 Project Structure
 
 ```text
-PM25_Forecasting/
+PM2.5-Air-Quality-Forecasting/
 │
 ├── Data/
-│   ├── pm25.csv
-│   ├── gee_features_daily.csv
-│   ├── combined_gee_pm25.csv
-│   └── cleaned_pm25.csv
+│   ├── raw/
+│   └── processed/
 │
 ├── src/
-│   ├── preprocessing.py
-│   └── validation_schemes.py
+│   ├── Exploratory_Data.py
+│   ├── Exploratory_temporal.py
+│   └── ...
 │
 ├── Results/
-│   ├── validation_splits.csv
-│   ├── validation_splits.npz
+│   ├── Figures/
 │   ├── Exploratory_Data.csv
-│   └── exploratory_temporal.csv
+│   ├── Exploratory_temporal.csv
+│   ├── validation_splits.npz
+│   └── ...
 │
-├── Report/
-│
-└── README.md
+├── README.md
+└── requirements.txt
 ```
 
+*Note: Update this structure to match the final repository contents.*
 
-## Technologies and Tools
+## ⚙️ Installation
 
-- **Programming Language:** Python
-- **Data Processing:** Pandas, NumPy
-- **Machine Learning:** Scikit-learn
-- **Data Visualization:** Matplotlib, Seaborn
-- **Version Control:** Git and GitHub
+Clone the repository:
 
-## Reproducibility
+```bash
+git clone https://github.com/sabrine-ould/PM2.5-Air-Quality-Forecasting.git
+```
 
-The project follows a consistent validation protocol. Cross-validation fold indices are saved and reused across model experiments to ensure comparable evaluation conditions.
+Move into the project directory:
 
-The independent future test period is kept separate from model development and validation.
+```bash
+cd PM2.5-Air-Quality-Forecasting
+```
 
-## Project Status
+Create and activate a virtual environment:
 
-**Status:** In Progress
+```bash
+python -m venv venv
+```
 
-This repository contains the code, datasets organization, experimental results, and documentation developed throughout the PM2.5 forecasting project.
+Install the required dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+## ▶️ Execution
+
+Run the analysis scripts from the project root directory:
+
+```bash
+python src/Exploratory_Data.py
+```
+
+```bash
+python src/Exploratory_temporal.py
+```
+
+Run the remaining preprocessing, training, and evaluation scripts according to their final names and execution order.
+
+## 📦 Outputs
+
+The project generates structured outputs for analysis and reproducibility, including:
+
+- `Exploratory_Data.csv`
+- `Exploratory_temporal.csv`
+- `results.csv`
+- `hyperparameters.csv`
+- `feature_importance.csv`
+- `comparisons.csv`
+- `experiments.csv`
+- `ablation.csv`
+- `ranking_stability.csv`
+
+Additional figures and diagnostic outputs are organized under the `Results/` directory.
+
+## 🔬 Reproducibility
+
+To support reproducible experiments:
+
+- Record the software and library versions.
+- Fix random seeds where applicable.
+- Save and reuse validation splits.
+- Fit preprocessing transformations using training data only.
+- Keep the future test period separate from model development.
+- Document model configurations and evaluation results.
+
+## 👥 Team
+
+**Group:** G8  
+**Program:** Master 1 — Data Science  
+**Institution:** University of Algiers 1  
+**Academic Year:** 2026–2027
+
+## 📚 Acknowledgements
+
+This project is conducted as part of the Master 1 Data Science curriculum.
+
+---
+
+<p align="center">
+  **PM2.5 Forecasting | Data Science Project**
+</p>
