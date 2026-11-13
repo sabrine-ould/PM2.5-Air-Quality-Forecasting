@@ -6,6 +6,25 @@
 
 **---
 
+🌍 PM2.5 Air Quality Forecasting
+
+Mediterranean Basin · 2016–2026
+
+<p align="center">
+  <strong>A Data Science Project for Daily Air Quality Analysis and Forecasting</strong>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Project-Data%20Science-2563EB?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Model-MLP-7C3AED?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Task-Regression-059669?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Region-Mediterranean-EA580C?style=for-the-badge" />
+</p>
+
+📌 01 · Project Overview
+
+
+
 ## 📌 Project Overview
 
 Air pollution is a major environmental challenge, particularly in densely populated and urban regions. Fine particulate matter (PM2.5) is an important air-quality indicator due to its potential impact on human health.
