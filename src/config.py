@@ -31,6 +31,25 @@ RESULTS_DIR = PROJECT_ROOT / "results"
 FIGURES_DIR = PROJECT_ROOT / "figures"
 REPORTS_DIR = PROJECT_ROOT / "reports"
 PRESENTATION_DIR = PROJECT_ROOT / "presentation"
+# ==========================================
+# CREATE PROJECT DIRECTORIES
+# ==========================================
+
+DIRECTORIES = [
+    RAW_DATA_DIR,
+    PROCESSED_DATA_DIR,
+    NOTEBOOKS_DIR,
+    SRC_DIR,
+    SCRIPTS_DIR,
+    FOLDS_DIR,
+    RESULTS_DIR,
+    FIGURES_DIR,
+    REPORTS_DIR,
+    PRESENTATION_DIR,
+]
+
+for directory in DIRECTORIES:
+    directory.mkdir(parents=True, exist_ok=True)
 
 
 # ==========================================
@@ -41,10 +60,6 @@ PM25_FILE = RAW_DATA_DIR / "pm25.csv"
 GEE_FILE = RAW_DATA_DIR / "gee_features_daily.csv"
 COMBINED_FILE = RAW_DATA_DIR / "combined_gee_pm25.csv"
 
-
-# ==========================================
-# PROCESSED DATA FILES
-# ==========================================
 
 # ==========================================
 # PROCESSED DATA FILES
@@ -68,3 +83,10 @@ TEMPORAL_FEATURES_5_3_4_FILE = PROCESSED_DATA_DIR / "temporal_features_5_3_4.csv
 EXPLORATORY_DATA_FILE = RESULTS_DIR / "Exploratory_Data.csv"
 
 EXPLORATORY_TEMPORAL_FILE = RESULTS_DIR / "Exploratory_temporal.csv"
+
+
+# ==========================================
+# VALIDATION FILES
+# ==========================================
+
+VALIDATION_FOLDS_FILE = FOLDS_DIR / "validation_fold_indices_5_4.npz"
