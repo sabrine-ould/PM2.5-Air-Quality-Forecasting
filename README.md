@@ -114,23 +114,29 @@ Validation and test results will be reported separately to avoid misleading perf
 
 ```text
 PM2.5-Air-Quality-Forecasting/
-│
-├── Data/
+.
+├── data/
 │   ├── raw/
 │   └── processed/
-│
-├── src/
-│   ├── Exploratory_Data.py
-│   ├── Exploratory_temporal.py
-│   └── ...
-│
-├── Results/
-│   ├── Figures/
+├── figures/
+│   └── slides/
+├── folds/
+├── notebooks/
+│   ├── 01_eda.ipynb
+│   └── 02_timeseries.ipynb
+├── presentation/
+│   └── Part1_EDA_Presentation.pptx
+├── results/
 │   ├── Exploratory_Data.csv
-│   ├── Exploratory_temporal.csv
-│   ├── validation_splits.npz
-│   └── ...
-│
+│   └── Exploratory_temporal.csv
+├── scripts/
+│   └── run_eda.py
+├── src/
+│   ├── config.py
+│   ├── features.py
+│   ├── preprocessing.py
+│   └── splits.py
+├── .gitignore
 ├── README.md
 └── requirements.txt
 ```
